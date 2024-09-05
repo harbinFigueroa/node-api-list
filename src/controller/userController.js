@@ -6,6 +6,7 @@ require('dotenv').config();
 
 //register new user controller
 const registerUser = async (req, res) => {
+
     const {username, email, password} = req.body;
 
     const user = await User.findOne({username});
@@ -34,14 +35,14 @@ const registerUser = async (req, res) => {
     res.status(201).send({message: "Nuevo usuario creado!"});
 };
 
-
+// Login, generar webtoken
 const loginUser = async (req, res) => {
 
     const { username, password } = req.body;
     const user = await User.findOne({ username });
 
     if (!user) {
-        return res.status(401).json({message: "Usuario no encontrado"});
+        return res.status(401).json({message: "Usuario no encontrado."});
     };   
    
 
@@ -52,11 +53,16 @@ const loginUser = async (req, res) => {
         return res.status(301).json({message: "Usuario o contraseña incorrectos."});
 
     }
+    const token = jwt.sign({
+        "usuario": user.username,
+        "email": user.email,
+        "role": user.role
+        }, process.env.SECRETKEY, {expiresIn: '1h'}); 
 
-    const token = jwt.sign({"usuario": user.username}, process.env.SECRETKEY, {expiresIn: '1h'});        
-    res.status(200).send({token});
-    
+    res.status(200).send({token});   
    
 }
+
+
 
 module.exports = { registerUser, loginUser };

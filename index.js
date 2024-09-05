@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const tareasRoutes = require('./src/routes/tareas.routes');
 require('dotenv').config();
 
-
 // consiguración de express app
 const app = express();
 
@@ -24,7 +23,7 @@ dbmongo.once('connected', () => {console.log('connected to the database');})
 
 
 // acceso a todas las rutas
-app.use('/tareas', tareasRoutes);
+app.use('/tareas/api/v1/', tareasRoutes);
 
 // iniciar servidor
 app.listen(port, () => {console.log(`Server running, listen on port ${port}`);});
