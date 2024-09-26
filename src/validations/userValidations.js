@@ -22,7 +22,7 @@ const  validateRegister = [
 ];
 
 const validateLogin = [
-    body('username')
+    body('email')
     .not()
     .isEmpty()
     .trim()

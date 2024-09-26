@@ -1,6 +1,8 @@
 const User = require('../model/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { clientMailTrap, sender } = require('../mailtrap/mailtrap.config');
+const { sendVerificationEmail } = require('../mailtrap/emails');
 require('dotenv').config();
 
 
@@ -18,14 +20,22 @@ const registerUser = async (req, res) => {
     }
 
     const salt = Number(process.env.SALT);
-
     const hashPassword = await bcrypt.hash(password, salt);
 
-    const newUser = User({
+    // Send Validation Number
+    const validationKey = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const newUser = await User({
         username: username,
         email: email,
-        password: hashPassword
+        password: hashPassword,
+        validationToken: validationKey
     }).save();
+    
+    console.log(newUser.email);  
+
+    sendVerificationEmail(newUser.email, newUser.validationToken);
+    
 
     if (!newUser) {
 
@@ -38,8 +48,8 @@ const registerUser = async (req, res) => {
 // Login, generar webtoken
 const loginUser = async (req, res) => {
 
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
     if (!user) {
         return res.status(401).json({message: "Usuario no encontrado."});
@@ -50,9 +60,15 @@ const loginUser = async (req, res) => {
 
     if(!match){        
        
-        return res.status(301).json({message: "Usuario o contraseña incorrectos."});
-
+        return res.status(301).json({message: "Usuario o contraseña incorrecto."});
     }
+
+    if(user.validUser === false){
+
+        return res.status(401).json({message: "Usuario no verificado, verifica tu email, hemos enviado un código para que puedas activar tu usuario."});
+
+    } 
+
     const token = jwt.sign({
         "usuario": user.username,
         "email": user.email,

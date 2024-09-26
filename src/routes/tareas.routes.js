@@ -18,7 +18,4 @@ router.post('/nota', verifyToken, createNote);
 router.put('/nota/:id', verifyToken, editNote);
 router.delete('/nota/:id', verifyToken, deleteNote);
 
-
-
-
 module.exports = router;
